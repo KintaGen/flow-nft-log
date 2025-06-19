@@ -1,37 +1,27 @@
 import "NonFungibleToken"
-import "ExampleNFT"
+import "KintaGenNFT"
 import "MetadataViews"
 
-// Prepares an account to receive NFTs by creating a Collection resource
+// Prepares an account to receive KintaGenNFTs by creating a Collection resource
 // and publishing a public capability to it.
 transaction {
     prepare(signer: auth(BorrowValue, SaveValue, IssueStorageCapabilityController, PublishCapability, UnpublishCapability) &Account) {
         
-        // Dynamically get the collection path info from the contract
-        let collectionData = ExampleNFT.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionData>())! as! MetadataViews.NFTCollectionData
+        let collectionData = KintaGenNFT.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionData>())! as! MetadataViews.NFTCollectionData
         
-        // Return early if a collection already exists
-        if signer.storage.borrow<&ExampleNFT.Collection>(from: collectionData.storagePath) != nil {
-            log("Account already has a collection.")
+        if signer.storage.borrow<&KintaGenNFT.Collection>(from: collectionData.storagePath) != nil {
+            log("Account already has a KintaGenNFT collection.")
             return
         }
         
-        log("Creating a new collection...")
-        let collection <- ExampleNFT.createEmptyCollection(nftType: Type<@ExampleNFT.NFT>())
+        log("Creating a new KintaGenNFT collection...")
+        let collection <- KintaGenNFT.createEmptyCollection(nftType: Type<@KintaGenNFT.NFT>())
         
-        // Save the new collection to the account's storage
         signer.storage.save(<-collection, to: collectionData.storagePath)
-        
-        // Unpublish any old capability at the path to be safe
         signer.capabilities.unpublish(collectionData.publicPath)
-        
-        // Issue a new capability for the collection
-        let collectionCap = signer.capabilities.storage.issue<&ExampleNFT.Collection>(collectionData.storagePath)
-        
-        // --- THIS IS THE FIX ---
-        // The variable is named `collectionCap`, not `cap`.
+        let collectionCap = signer.capabilities.storage.issue<&KintaGenNFT.Collection>(collectionData.storagePath)
         signer.capabilities.publish(collectionCap, at: collectionData.publicPath)
         
-        log("Collection setup complete.")
+        log("KintaGenNFT collection setup complete.")
     }
 }
