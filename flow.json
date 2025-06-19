@@ -69,19 +69,14 @@
 				"location": "emulator-account.pkey"
 			}
 		},
-		"test-account": {
+		"test-account-3": {
 			"address": "179b6b1cb6755e31",
-			"key": "c371783c25a7cdf923465d5191e2abd4ea22df7e8305270d867256be7d6d81d4"
-		},
-		"test-account-2": {
-			"address": "179b6b1cb6755e31",
-			"key": "e1451177db3d4cc1dc59998434b7adc2c73d2800a9af7e4b20e20bf4485dbdb4"
+			"key": "698084a8fa10c2854a8eb1e431c5da9477431b05e36b46246f0b1b5d7d190df4"
 		}
 	},
 	"deployments": {
 		"emulator": {
-
-			"test-account-2": [
+			"test-account-3": [
 				"ExampleNFT",
 				"Counter",
 				"Burner",
