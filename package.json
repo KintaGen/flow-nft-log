@@ -3,6 +3,7 @@
     "@onflow/fcl": "^1.18.0",
     "@onflow/types": "^1.4.1",
     "dotenv": "^16.5.0",
-    "elliptic": "^6.6.1"
+    "elliptic": "^6.6.1",
+    "js-sha3": "^0.9.3"
   }
 }
