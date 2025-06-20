@@ -2,3 +2,25 @@
 # flow
 emulator-account.pkey
 imports
+node_modules/
+.env
+.env.local
+dist/
+build/
+.cache/
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+*.tsbuildinfo
+# VSCode
+.vscode/
+# Mac
+Icon?
+# OS generated files
+Thumbs.db
+# Flow CLI
+.flow/
+.flow.json
