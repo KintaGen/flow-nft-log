@@ -1,4 +1,4 @@
-import KintaGenNFT from 0xf8d6e0586b0a20c7
+import "KintaGenNFT"
 
 access(all) fun main(owner: Address): [UInt64] {
     let col = getAccount(owner)

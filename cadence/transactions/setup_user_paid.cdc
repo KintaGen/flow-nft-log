@@ -1,9 +1,8 @@
-import "KintaGenNFT"
+import "KintaGenNFTPaid"
 import "FlowToken"
 
 transaction() {
     prepare(signer: auth(BorrowValue, SaveValue, StorageCapabilities, PublishCapability) &Account) {
-        // Flow vault + receiver (create/publish if missing)
         if signer.storage.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault) == nil {
             signer.storage.save(<- FlowToken.createEmptyVault(), to: /storage/flowTokenVault)
         }
@@ -12,14 +11,13 @@ transaction() {
             signer.capabilities.publish(cap, at: /public/flowTokenReceiver)
         }
 
-        // KintaGenNFT collection + public capability (idempotent)
-        if signer.storage.borrow<&KintaGenNFT.Collection>(from: /storage/kintagenNFTCollection) == nil {
+        if signer.storage.borrow<&KintaGenNFTPaid.Collection>(from: /storage/kintagenPaidCollection) == nil {
             signer.storage.save(
-                <- KintaGenNFT.createEmptyCollection(nftType: Type<@KintaGenNFT.NFT>()),
-                to: /storage/kintagenNFTCollection
+                <- KintaGenNFTPaid.createEmptyCollection(nftType: Type<@KintaGenNFTPaid.NFT>()),
+                to: /storage/kintagenPaidCollection
             )
-            let colCap = signer.capabilities.storage.issue<&KintaGenNFT.Collection>(/storage/kintagenNFTCollection)
-            signer.capabilities.publish(colCap, at: /public/kintagenNFTCollection)
+            let colCap = signer.capabilities.storage.issue<&KintaGenNFTPaid.Collection>(/storage/kintagenPaidCollection)
+            signer.capabilities.publish(colCap, at: /public/kintagenPaidCollection)
         }
     }
 }

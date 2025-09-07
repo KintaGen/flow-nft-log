@@ -1,4 +1,4 @@
-import "KintaGenNFT"
+import "KintaGenNFTPaid"
 import "FlowToken"
 import "FungibleToken"
 
@@ -7,11 +7,11 @@ transaction(agent: String, outputCID: String, runHash: String) {
         let vault: auth(FungibleToken.Withdraw) &FlowToken.Vault =
             signer.storage
                 .borrow<auth(FungibleToken.Withdraw) &FlowToken.Vault>(from: /storage/flowTokenVault)
-                ?? panic("Missing FlowToken Vault. Run setup_user.cdc first.")
+                ?? panic("Missing FlowToken Vault. Run setup_user_paid.cdc first.")
 
         let payment <- vault.withdraw(amount: 1.00)
 
-        let nft <- KintaGenNFT.publicMint(
+        let nft <- KintaGenNFTPaid.publicMint(
             payment: <- payment,
             agent: agent,
             outputCID: outputCID,
@@ -19,8 +19,8 @@ transaction(agent: String, outputCID: String, runHash: String) {
         )
 
         let collection = signer.storage
-            .borrow<&KintaGenNFT.Collection>(from: /storage/kintagenNFTCollection)
-            ?? panic("Missing KintaGenNFT Collection. Run setup_user.cdc first.")
+            .borrow<&KintaGenNFTPaid.Collection>(from: /storage/kintagenPaidCollection)
+            ?? panic("Missing KintaGenNFTPaid Collection. Run setup_user_paid.cdc first.")
         collection.deposit(token: <- nft)
     }
 }

@@ -1,6 +1,6 @@
 {
 	"contracts": {
-	  "KintaGenNFT": "cadence/contracts/KintaGenNFT.cdc"
+	  "KintaGenNFTPaid": "cadence/contracts/KintaGenNFTPaid.cdc"
 	},
 	"dependencies": {
 	  "NonFungibleToken": {
@@ -78,12 +78,12 @@
 	  }
 	},
 	"deployments": {
-	  "emulator": {
-		"emulator-account": ["KintaGenNFT"]
-	  },
-	  "testnet": {
-		"testnet-account": ["KintaGenNFT"]
+		"testnet": {
+		  "testnet-account": ["KintaGenNFTPaid"]
+		},
+		"emulator": {
+		  "emulator-account": ["KintaGenNFTPaid"]
+		}
 	  }
-	}
   }
   
