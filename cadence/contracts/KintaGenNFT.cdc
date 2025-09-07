@@ -1,22 +1,15 @@
 import "NonFungibleToken"
 import "ViewResolver"
 import "MetadataViews"
+import "FungibleToken"
+import "FlowToken"
 
-/**
-*  KintaGenNFT Contract
-*
-*  This contract implements an NFT that functions as an immutable, on-chain 
-*  logbook for KintaGen's data and agent workflows. It features a custom
-*  `WorkflowStepView` to present the NFT's entire history as a structured,
-*  human-readable story, perfect for visual display on a frontend.
-*
-*/
 access(all) contract KintaGenNFT: NonFungibleToken {
 
-    /* ─────────────── Standard Paths ─────────────── */
+    /* ─────────────── Config ─────────────── */
     access(all) let CollectionStoragePath: StoragePath
-    access(all) let CollectionPublicPath : PublicPath
-    access(all) let MinterStoragePath    : StoragePath
+    access(all) let CollectionPublicPath: PublicPath
+    access(all) let MinterStoragePath: StoragePath
 
     /* ────────────────── Events ────────────────── */
     access(all) event LogEntryAdded(nftID: UInt64, agent: String, outputCID: String)
@@ -38,7 +31,7 @@ access(all) contract KintaGenNFT: NonFungibleToken {
         }
     }
 
-    /* ─────────────── Custom View for Frontend Story ─────────────── */
+    /* ─────────────── Custom View ─────────────── */
     access(all) struct WorkflowStepView {
         access(all) let stepNumber: Int
         access(all) let agent: String
@@ -53,6 +46,29 @@ access(all) contract KintaGenNFT: NonFungibleToken {
             self.resultCID = resultCID
             self.timestamp = timestamp
         }
+    }
+
+    /* ─────────────────── Public Mint (paid) ─────────────────── */
+    access(all) fun publicMint(
+        payment: @{FungibleToken.Vault},
+        agent: String,
+        outputCID: String,
+        runHash: String
+    ): @KintaGenNFT.NFT {
+        // No function calls in preconditions (Cadence v1 rule)
+        pre {
+            payment.balance == 1.00: "Incorrect mint payment amount."
+        }
+
+        let receiver = self.getFlowReceiver()
+        receiver.deposit(from: <- payment)
+
+        return <- create NFT(agent: agent, outputCID: outputCID, runHash: runHash)
+    }
+
+    access(all) view fun getMintPrice(): UFix64 {
+        // constant price; avoids storage layout changes
+        return 1.00
     }
 
     /* ─────────────────── NFT Resource ─────────────────── */
@@ -85,7 +101,7 @@ access(all) contract KintaGenNFT: NonFungibleToken {
                 Type<MetadataViews.Display>(),
                 Type<MetadataViews.Traits>(),
                 Type<MetadataViews.Serial>(),
-                Type<KintaGenNFT.WorkflowStepView>()
+                Type<[KintaGenNFT.WorkflowStepView]>()
             ]
         }
 
@@ -99,7 +115,11 @@ access(all) contract KintaGenNFT: NonFungibleToken {
                         latestDescription = latestEntry.actionDescription
                         latestThumbnail = MetadataViews.IPFSFile(cid: latestEntry.outputCID, path: nil)
                     }
-                    return MetadataViews.Display(name: "KintaGen Log #".concat(self.id.toString()), description: latestDescription, thumbnail: latestThumbnail)
+                    return MetadataViews.Display(
+                        name: "KintaGen Log #".concat(self.id.toString()),
+                        description: latestDescription,
+                        thumbnail: latestThumbnail
+                    )
 
                 case Type<MetadataViews.Traits>():
                     var traits = [
@@ -116,7 +136,7 @@ access(all) contract KintaGenNFT: NonFungibleToken {
                 case Type<MetadataViews.Serial>():
                     return MetadataViews.Serial(self.id)
 
-                case Type<KintaGenNFT.WorkflowStepView>():
+                case Type<[KintaGenNFT.WorkflowStepView]>():
                     let story: [WorkflowStepView] = []
                     story.append(
                         WorkflowStepView(
@@ -145,7 +165,7 @@ access(all) contract KintaGenNFT: NonFungibleToken {
             }
             return nil
         }
-        
+
         access(all) fun createEmptyCollection(): @{NonFungibleToken.Collection} {
             return <- KintaGenNFT.createEmptyCollection(nftType: Type<@KintaGenNFT.NFT>())
         }
@@ -154,51 +174,50 @@ access(all) contract KintaGenNFT: NonFungibleToken {
     /* ─────────────── Collection Resource ─────────────── */
     access(all) resource Collection: NonFungibleToken.Collection, ViewResolver.ResolverCollection {
         access(all) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
-        
+
         init() {
             self.ownedNFTs <- {}
         }
-        
+
         access(all) fun deposit(token: @{NonFungibleToken.NFT}) {
             let nft <- token as! @KintaGenNFT.NFT
             let old <- self.ownedNFTs[nft.id] <- nft
             destroy old
         }
-        
+
         access(NonFungibleToken.Withdraw) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
             let nft <- self.ownedNFTs.remove(key: withdrawID)
                 ?? panic("NFT does not exist")
-            return <-nft
+            return <- nft
         }
-        
+
         access(all) view fun getIDs(): [UInt64] {
             return self.ownedNFTs.keys
         }
-        
+
         access(all) view fun getLength(): Int {
             return self.ownedNFTs.length
         }
-        
+
         access(all) view fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
             return &self.ownedNFTs[id] as &{NonFungibleToken.NFT}?
         }
 
-        // --- THIS IS THE FIXED, REFORMATTED FUNCTION ---
         access(all) view fun borrowViewResolver(id: UInt64): &{ViewResolver.Resolver}? {
             if let nft = &self.ownedNFTs[id] as &{NonFungibleToken.NFT}? {
                 return nft as &{ViewResolver.Resolver}
             }
             return nil
         }
-        
+
         access(all) view fun getSupportedNFTTypes(): {Type: Bool} {
             return { Type<@KintaGenNFT.NFT>(): true }
         }
-        
+
         access(all) view fun isSupportedNFTType(type: Type): Bool {
             return type == Type<@KintaGenNFT.NFT>()
         }
-        
+
         access(all) fun createEmptyCollection(): @{NonFungibleToken.Collection} {
             return <- KintaGenNFT.createEmptyCollection(nftType: Type<@KintaGenNFT.NFT>())
         }
@@ -211,15 +230,15 @@ access(all) contract KintaGenNFT: NonFungibleToken {
         }
     }
 
-    /* ─────────────────── Contract-Level Functions ─────────────────── */
+    /* ─────────────────── Helpers ─────────────────── */
     access(all) fun createEmptyCollection(nftType: Type): @{NonFungibleToken.Collection} {
         return <- create Collection()
     }
-    
+
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
         return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>()]
     }
-    
+
     access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
         switch viewType {
             case Type<MetadataViews.NFTCollectionData>():
@@ -233,7 +252,13 @@ access(all) contract KintaGenNFT: NonFungibleToken {
                     })
                 )
             case Type<MetadataViews.NFTCollectionDisplay>():
-                let media = MetadataViews.Media(file: MetadataViews.IPFSFile(cid: "bafkreie6j2nehq5gpcjzymf5qj3txgxgm5xcg2gqzquthy2z2g44zbdvda", path: nil), mediaType: "image/png")
+                let media = MetadataViews.Media(
+                    file: MetadataViews.IPFSFile(
+                        cid: "bafkreie6j2nehq5gpcjzymf5qj3txgxgm5xcg2gqzquthy2z2g44zbdvda",
+                        path: nil
+                    ),
+                    mediaType: "image/png"
+                )
                 return MetadataViews.NFTCollectionDisplay(
                     name: "KintaGen Workflow NFTs",
                     description: "NFTs that function as a permanent, on-chain logbook for KintaGen's data-science workflows.",
@@ -246,18 +271,26 @@ access(all) contract KintaGenNFT: NonFungibleToken {
         return nil
     }
 
+    access(all) fun getFlowReceiver(): &FlowToken.Vault {
+        return self.account
+            .capabilities
+            .get<&FlowToken.Vault>(/public/flowTokenReceiver)
+            .borrow()
+            ?? panic("Contract account is missing a FlowToken receiver at /public/flowTokenReceiver.")
+    }
+
     /* ─────────────── init ─────────────── */
     init() {
         self.CollectionStoragePath = /storage/kintagenNFTCollection
         self.CollectionPublicPath  = /public/kintagenNFTCollection
         self.MinterStoragePath     = /storage/kintagenNFTMinter
-        
+
         self.account.storage.save(<- create Minter(), to: self.MinterStoragePath)
         self.account.storage.save(<- create Collection(), to: self.CollectionStoragePath)
-        
+
         let cap = self.account.capabilities.storage.issue<&KintaGenNFT.Collection>(self.CollectionStoragePath)
         self.account.capabilities.publish(cap, at: self.CollectionPublicPath)
-        
+
         emit ContractInitialized()
     }
 }
