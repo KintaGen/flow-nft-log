@@ -1,21 +1,26 @@
-// Path: kintagen-viewer/src/flow/config.js
+// src/flow/config.js
 
 import { config } from "@onflow/fcl";
 
+// --- The Address of your KintaGenNFT contract on Testnet ---
+// This is the address from your successful deployment.
+const KINTAGEN_NFT_ADDRESS = "0x4971e1983b20b758";
+
+// --- Standard Flow Contract Addresses on Testnet ---
+const NON_FUNGIBLE_TOKEN_ADDRESS = "0x631e88ae7f1d7c20";
+const METADATA_VIEWS_ADDRESS = "0x631e88ae7f1d7c20"; // ViewResolver is part of this
+
 config({
-  // Point FCL to the local emulator's access node
-  "accessNode.api": "http://127.0.0.1:8888",
+  // 1. Point FCL to the Flow Testnet REST API endpoint
+  "accessNode.api": "https://rest-testnet.onflow.org",
   
-  // Point FCL to the local dev wallet for authentication services
-  "discovery.wallet": "http://localhost:8701/fcl/authn",
+  // 2. Point FCL to the Testnet wallet discovery service. This allows
+  // real wallets like Blocto, Lilico, etc., to connect to your app.
+  "discovery.wallet": "https://fcl-discovery.onflow.org/testnet/authn",
   
-  // --- Your Contract Alias ---
-  // This tells FCL that whenever it sees `import KintaGenNFT from 0xKintaGenNFT`
-  // in a Cadence script, it should replace `0xKintaGenNFT` with the contract's
-  // actual address on the emulator.
-  "0xKintaGenNFT": "0xf8d6e0586b0a20c7",
-  
-  // Add aliases for standard contracts for good practice
-  "0xNonFungibleToken": "0xf8d6e0586b0a20c7",
-  "0xViewResolver": "0xf8d6e0586b0a20c7"
+  // 3. Set up aliases for our contracts using their Testnet addresses
+  "0xKintaGenNFT": KINTAGEN_NFT_ADDRESS,
+  "0xNonFungibleToken": NON_FUNGIBLE_TOKEN_ADDRESS,
+  "0xViewResolver": METADATA_VIEWS_ADDRESS,
+  "0xMetadataViews": METADATA_VIEWS_ADDRESS,
 });

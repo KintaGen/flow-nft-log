@@ -24,7 +24,7 @@ function App() {
   const [error, setError] = useState(null);
 
   // The address of the account that holds the main collection
-  const collectionOwnerAddress = "0xf8d6e0586b0a20c7"; 
+  const collectionOwnerAddress = "0x4971e1983b20b758";
 
   // This useEffect runs once when the app loads to fetch all the IDs.
   useEffect(() => {

@@ -1,6 +1,7 @@
 {
 	"contracts": {
-	  "KintaGenNFTPaid": "cadence/contracts/KintaGenNFTPaid.cdc"
+	  "KintaGenNFTPaid": "cadence/contracts/KintaGenNFTPaid.cdc",
+	  "PublicKintaGenNFTv2": "cadence/contracts/PublicKintaGenNFTv2.cdc"
 	},
 	"dependencies": {
 	  "NonFungibleToken": {
@@ -79,10 +80,10 @@
 	},
 	"deployments": {
 		"testnet": {
-		  "testnet-account": ["KintaGenNFTPaid"]
+		  "testnet-account": ["KintaGenNFTPaid", "PublicKintaGenNFTv2"]
 		},
 		"emulator": {
-		  "emulator-account": ["KintaGenNFTPaid"]
+		  "emulator-account": ["KintaGenNFTPaid", "PublicKintaGenNFTv2"]
 		}
 	  }
   }
