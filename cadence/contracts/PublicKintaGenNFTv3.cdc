@@ -81,8 +81,10 @@ access(all) contract PublicKintaGenNFTv3: NonFungibleToken {
 
         access(all) view fun getViews(): [Type] {
             return [
+                Type<MetadataViews.Display>(),
                 Type<MetadataViews.Traits>(),
                 Type<MetadataViews.Serial>(),
+                Type<MetadataViews.ExternalURL>(),
                 Type<[PublicKintaGenNFTv3.WorkflowStepView]>()
             ]
         }
@@ -98,6 +100,9 @@ access(all) contract PublicKintaGenNFTv3: NonFungibleToken {
                             path: nil
                         )
                     )
+                case Type<MetadataViews.ExternalURL>():
+                    let base = "http://kintagendemo.vercel.app/#/logbook/"
+                    return MetadataViews.ExternalURL(base.concat(self.id.toString()))
                 case Type<MetadataViews.Traits>():
                     var traits: [MetadataViews.Trait] = []
                     traits.append(MetadataViews.Trait(name: "Principal Investigator", value: self.principalInvestigator, displayType: "String", rarity: nil))
