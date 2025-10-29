@@ -261,7 +261,11 @@ access(all) contract PublicKintaGenNFTv3: NonFungibleToken {
                     })
                 )
             case Type<MetadataViews.NFTCollectionDisplay>():
-                let media = MetadataViews.Media(
+                let square = MetadataViews.Media(
+                    file: MetadataViews.IPFSFile(cid: "bafkreihmwismiwtvnedp2yrdmoq6qwje66tkgdgjotbbhcw67iskadpxt4", path: nil),
+                    mediaType: "image/png"
+                )
+                let banner = MetadataViews.Media(
                     file: MetadataViews.IPFSFile(cid: "bafkreie6j2nehq5gpcjzymf5qj3txgxgm5xcg2gqzquthy2z2g44zbdvda", path: nil),
                     mediaType: "image/png"
                 )
@@ -269,8 +273,8 @@ access(all) contract PublicKintaGenNFTv3: NonFungibleToken {
                     name: "KintaGen Scientific Projects",
                     description: "Workflow NFTs that capture the complete scientific project history, including every log entry.",
                     externalURL: MetadataViews.ExternalURL("https://kintagen.com"),
-                    squareImage: media,
-                    bannerImage: media,
+                    squareImage: square,
+                    bannerImage: banner,
                     socials: {}
                 )
         }
