@@ -101,7 +101,7 @@ access(all) contract PublicKintaGenNFTv3: NonFungibleToken {
                         )
                     )
                 case Type<MetadataViews.ExternalURL>():
-                    let base = "http://kintagendemo.vercel.app/#/logbook/"
+                    let base = "https://kintagendemo.vercel.app/#/logbook/"
                     return MetadataViews.ExternalURL(base.concat(self.id.toString()))
                 case Type<MetadataViews.Traits>():
                     var traits: [MetadataViews.Trait] = []
@@ -272,7 +272,7 @@ access(all) contract PublicKintaGenNFTv3: NonFungibleToken {
                 return MetadataViews.NFTCollectionDisplay(
                     name: "KintaGen Scientific Projects",
                     description: "Workflow NFTs that capture the complete scientific project history, including every log entry.",
-                    externalURL: MetadataViews.ExternalURL("https://kintagen.com"),
+                    externalURL: MetadataViews.ExternalURL("https://kintagendemo.vercel.app"),
                     squareImage: square,
                     bannerImage: banner,
                     socials: {}
