@@ -84,12 +84,12 @@ access(all) contract PublicKintaGenNFTv3: NonFungibleToken {
                 Type<MetadataViews.Display>(),
                 Type<MetadataViews.Traits>(),
                 Type<MetadataViews.Serial>(),
-            Type<MetadataViews.NFTCollectionDisplay>(),
-            Type<MetadataViews.NFTCollectionData>(),
-            Type<MetadataViews.ExternalURL>(),
-            Type<[PublicKintaGenNFTv3.WorkflowStepView]>()
-        ]
-    }
+                Type<MetadataViews.NFTCollectionDisplay>(),
+                Type<MetadataViews.NFTCollectionData>(),
+                Type<MetadataViews.ExternalURL>(),
+                Type<[PublicKintaGenNFTv3.WorkflowStepView]>()
+            ]
+        }
 
         access(all) fun resolveView(_ view: Type): AnyStruct? {
             switch view {
@@ -175,6 +175,72 @@ access(all) contract PublicKintaGenNFTv3: NonFungibleToken {
 
         access(all) fun createEmptyCollection(): @{NonFungibleToken.Collection} {
             return <- PublicKintaGenNFTv3.createEmptyCollection(nftType: Type<@PublicKintaGenNFTv3.NFT>())
+        }
+    }
+
+    access(all) fun appendAutomatedLog(
+        nftID: UInt64,
+        agent: String,
+        title: String,
+        description: String,
+        cid: String
+    ) {
+        let collection = self.account.storage.borrow<&PublicKintaGenNFTv3.Collection>(from: self.CollectionStoragePath)
+            ?? panic("PublicKintaGenNFTv3 admin collection missing.")
+
+        let nftRef = collection.borrowNFT(nftID)
+            ?? panic("KintaGen NFT with provided ID not found.")
+
+        let concrete = nftRef as! &PublicKintaGenNFTv3.NFT
+        concrete.addLogEntry(
+            agent: agent,
+            title: title,
+            description: description,
+            ipfsHash: cid
+        )
+    }
+
+    access(all) view fun getDailySummaryStats(nftID: UInt64, windowSeconds: UFix64): {String: AnyStruct} {
+        let collection = self.account.storage.borrow<&PublicKintaGenNFTv3.Collection>(from: self.CollectionStoragePath)
+            ?? panic("PublicKintaGenNFTv3 admin collection missing.")
+
+        let nftRef = collection.borrowNFT(nftID)
+            ?? panic("KintaGen NFT with provided ID not found.")
+        let concrete = nftRef as! &PublicKintaGenNFTv3.NFT
+
+        let now = getCurrentBlock().timestamp
+        var counted = 0
+        var earliest = now
+        var latest = now
+
+        var index = concrete.log.length - 1
+        while index >= 0 {
+            let entry = concrete.log[index]
+            if now - entry.timestamp > windowSeconds {
+                break
+            }
+            counted = counted + 1
+            if entry.timestamp < earliest {
+                earliest = entry.timestamp
+            }
+            if entry.timestamp > latest {
+                latest = entry.timestamp
+            }
+            index = index - 1
+        }
+
+        if counted == 0 {
+            earliest = now
+            latest = now
+        }
+
+        return {
+            "entries": counted,
+            "windowSeconds": windowSeconds,
+            "startTimestamp": earliest,
+            "endTimestamp": latest,
+            "totalEntries": concrete.log.length,
+            "projectName": concrete.projectName
         }
     }
 

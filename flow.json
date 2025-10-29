@@ -1,7 +1,9 @@
 {
 	"contracts": {
 	  "KintaGenNFTPaid": "cadence/contracts/KintaGenNFTPaid.cdc",
-	  "PublicKintaGenNFTv2": "cadence/contracts/PublicKintaGenNFTv2.cdc"
+	  "PublicKintaGenNFTv2": "cadence/contracts/PublicKintaGenNFTv2.cdc",
+	  "PublicKintaGenNFTv3": "cadence/contracts/PublicKintaGenNFTv3.cdc",
+	  "KintaGenLogScheduler": "cadence/contracts/KintaGenLogScheduler.cdc"
 	},
 	"dependencies": {
 	  "NonFungibleToken": {
@@ -43,6 +45,22 @@
 		  "testnet": "7e60df042a9c0868",
 		  "mainnet": "1654653399040a61"
 		}
+	  },
+	  "FlowTransactionScheduler": {
+		"source": "mainnet://31cbf789b8eb7e14.FlowTransactionScheduler",
+		"aliases": {
+		  "emulator": "f8d6e0586b0a20c7",
+		  "testnet": "31cbf789b8eb7e14",
+		  "mainnet": "31cbf789b8eb7e14"
+		}
+	  },
+	  "FlowTransactionSchedulerUtils": {
+		"source": "mainnet://94e95f80ab1407e4.FlowTransactionSchedulerUtils",
+		"aliases": {
+		  "emulator": "f8d6e0586b0a20c7",
+		  "testnet": "94e95f80ab1407e4",
+		  "mainnet": "94e95f80ab1407e4"
+		}
 	  }
 	},
 	"emulators": {
@@ -80,10 +98,10 @@
 	},
 	"deployments": {
 		"testnet": {
-		  "testnet-account": ["KintaGenNFTPaid", "PublicKintaGenNFTv2"]
+		  "testnet-account": ["KintaGenNFTPaid", "PublicKintaGenNFTv2", "PublicKintaGenNFTv3", "KintaGenLogScheduler"]
 		},
 		"emulator": {
-		  "emulator-account": ["KintaGenNFTPaid", "PublicKintaGenNFTv2"]
+		  "emulator-account": ["KintaGenNFTPaid", "PublicKintaGenNFTv2", "PublicKintaGenNFTv3", "KintaGenLogScheduler"]
 		}
 	  }
   }
