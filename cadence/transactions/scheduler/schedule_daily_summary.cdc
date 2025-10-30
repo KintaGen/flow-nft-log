@@ -4,19 +4,11 @@ import "FlowToken"
 import "FungibleToken"
 import "KintaGenLogScheduler"
 
-/// Schedule a daily summary log for a specific KintaGen project NFT.
-///
-/// Parameters:
-/// - nftID: ID of the KintaGen project NFT.
-/// - delaySeconds: Seconds in the future to execute the summary.
-/// - windowSeconds: Sliding window of seconds to summarise (defaults to 24h).
-/// - priority: 0 = High, 1 = Medium, anything else = Low.
-/// - executionEffort: Gas limit for the scheduled transaction.
-/// - metadataCID: Optional CID where a detailed summary artefact is stored ("n/a" if omitted).
 transaction(
     nftID: UInt64,
     delaySeconds: UFix64,
     windowSeconds: UFix64,
+    repeatSeconds: UFix64,
     priority: UInt8,
     executionEffort: UInt64,
     metadataCID: Optional<String>
@@ -35,7 +27,10 @@ transaction(
             "nftID": nftID,
             "windowSeconds": windowSeconds,
             "agent": "KintaGen Scheduler",
-            "cid": (metadataCID ?? "n/a")
+            "cid": (metadataCID ?? "n/a"),
+            "repeatSeconds": repeatSeconds,
+            "priorityRaw": priority,
+            "executionEffort": executionEffort
         }
 
         let estimate = FlowTransactionScheduler.estimate(

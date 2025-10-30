@@ -9,6 +9,7 @@ transaction(
     nftID: UInt64,
     delaySeconds: UFix64,
     dueTimestamp: UFix64,
+    repeatSeconds: UFix64,
     priority: UInt8,
     executionEffort: UInt64,
     note: Optional<String>,
@@ -29,7 +30,10 @@ transaction(
             "dueTimestamp": dueTimestamp,
             "agent": "Grant Reminder Bot",
             "cid": (summaryCID ?? "n/a"),
-            "note": (note ?? "")
+            "note": (note ?? ""),
+            "repeatSeconds": repeatSeconds,
+            "priorityRaw": priority,
+            "executionEffort": executionEffort
         }
 
         let estimate = FlowTransactionScheduler.estimate(

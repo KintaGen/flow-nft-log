@@ -1,4 +1,7 @@
 import "FlowTransactionScheduler"
+import "FlowTransactionSchedulerUtils"
+import "FlowToken"
+import "FungibleToken"
 import PublicKintaGenNFTv3 from 0xPublicKintaGenNFTv3
 
 access(all) contract KintaGenLogScheduler {
@@ -90,6 +93,61 @@ access(all) contract KintaGenLogScheduler {
                 description: description,
                 cid: cid
             )
+
+            if let repeatSeconds = payload["repeatSeconds"] as? UFix64 {
+                if repeatSeconds > 0.0 {
+                    let priorityRaw = payload["priorityRaw"] as? UInt8 ?? 1
+                    let executionEffort = payload["executionEffort"] as? UInt64 ?? 1000
+
+                    let priority =
+                        priorityRaw == 0
+                            ? FlowTransactionScheduler.Priority.High
+                            : priorityRaw == 1
+                                ? FlowTransactionScheduler.Priority.Medium
+                                : FlowTransactionScheduler.Priority.Low
+
+                    let nextTimestamp = getCurrentBlock().timestamp + repeatSeconds
+
+                    let managerRef = KintaGenLogScheduler.account.storage
+                        .borrow<auth(FlowTransactionSchedulerUtils.Owner) &{FlowTransactionSchedulerUtils.Manager}>(
+                            from: FlowTransactionSchedulerUtils.managerStoragePath
+                        ) ?? panic("Scheduled transaction manager missing on contract account.")
+
+                    let estimate = FlowTransactionScheduler.estimate(
+                        data: payload,
+                        timestamp: nextTimestamp,
+                        priority: priority,
+                        executionEffort: executionEffort
+                    )
+
+                    assert(
+                        estimate.timestamp != nil || priority == FlowTransactionScheduler.Priority.Low,
+                        message: estimate.error ?? "estimation failed"
+                    )
+
+                    let vaultRef = KintaGenLogScheduler.account.storage
+                        .borrow<auth(FungibleToken.Withdraw) &FlowToken.Vault>(from: /storage/flowTokenVault)
+                        ?? panic("Scheduler FlowToken vault missing on contract account.")
+
+                    let fees <- vaultRef.withdraw(amount: estimate.flowFee ?? 0.0) as! @FlowToken.Vault
+
+                    let handlerTypes = managerRef.getHandlerTypes()
+                    let identifiers = handlerTypes.keys
+                    let handlerIdentifier = identifiers.length > 0
+                        ? identifiers[0]!
+                        : panic("No handler types registered with manager.")
+
+                    managerRef.scheduleByHandler(
+                        handlerTypeIdentifier: handlerIdentifier,
+                        handlerUUID: nil,
+                        data: payload,
+                        timestamp: nextTimestamp,
+                        priority: priority,
+                        executionEffort: executionEffort,
+                        fees: <-fees
+                    )
+                }
+            }
         }
 
         access(all) view fun getViews(): [Type] {
